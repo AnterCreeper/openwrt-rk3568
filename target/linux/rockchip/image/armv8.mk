@@ -310,3 +310,15 @@ define Device/xunlong_orangepi-r1-plus-lts
   DEVICE_PACKAGES := kmod-usb-net-rtl8152
 endef
 TARGET_DEVICES += xunlong_orangepi-r1-plus-lts
+
+define Device/nsy_g68plus
+  DEVICE_VENDOR := NSY
+  DEVICE_MODEL := g68plus
+  SOC := rk3568
+  DEVICE_DTS := rk3568-nsy-g68plus
+  DEVICE_DTS_DIR := ../dts
+  KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
+  SUPPORTED_DEVICES := nsy,g68plus
+  DEVICE_PACKAGES := blkdiscard block-mount kmod-nvme kmod-switch-rtl8367b swconfig kmod-mt7915e kmod-mt7916-firmware
+endef
+TARGET_DEVICES += nsy_g68plus
