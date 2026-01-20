@@ -1776,7 +1776,7 @@ CONFIG_PACKAGE_trusted-firmware-a-rk3566=y
 CONFIG_PACKAGE_trusted-firmware-a-rk3568=y
 CONFIG_PACKAGE_trusted-firmware-a-rk3568-e25=y
 CONFIG_PACKAGE_trusted-firmware-a-rk3588=y
-CONFIG_PACKAGE_u-boot-nsy-g68plus-rk3568=y
+CONFIG_PACKAGE_u-boot-g68plus-rk3568=y
 # end of Boot Loaders
 
 #

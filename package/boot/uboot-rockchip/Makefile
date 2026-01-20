@@ -164,7 +164,6 @@ define U-Boot/rockpro64-rk3399
     pine64_rockpro64
 endef
 
-
 # RK3566 boards
 
 define U-Boot/rk3566/Default
@@ -271,7 +270,7 @@ define U-Boot/rock-3b-rk3568
     radxa_rock-3b
 endef
 
-define U-Boot/nsy-g68plus-rk3568
+define U-Boot/g68plus-rk3568
   $(U-Boot/rk3568/Default)
   NAME:=NSY G68+
   UBOOT_CONFIG:=nsy-g68plus-rk3568
@@ -363,7 +362,7 @@ UBOOT_TARGETS := \
   radxa-e25-rk3568 \
   rock-3a-rk3568 \
   rock-3b-rk3568 \
-  nsy-g68plus-rk3568 \
+  g68plus-rk3568 \
   nanopc-t6-rk3588 \
   rock5b-rk3588 \
   sige7-rk3588 \
