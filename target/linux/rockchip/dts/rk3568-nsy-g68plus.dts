@@ -56,7 +56,7 @@
 		regulator-max-microvolt = <3300000>;
 	};
 
-	vcc3v3_pcie: regulator-sys {
+	vcc3v3_pcie: regulator-pcie {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie";
 		regulator-boot-on;
@@ -78,13 +78,13 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		enable-active-high;
-		gpio = <&gpio0 RK_PA6 GPIO_ACTIVE_HIGH>;
+		gpio = <&gpio0 RK_PA5 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&usb0_pwren>;
 	};
 
 	xpcs: syscon@fda00000 {
-		status = "disabled";
+		status = "okay";
 		compatible = "rockchip,rk3568-xpcs", "syscon";
 		reg = <0x0 0xfda00000 0x0 0x200000>;
 	};
@@ -104,16 +104,16 @@
 	};
 
 	adc_keys: adc-keys {
+		status = "okay";
 		compatible = "adc-keys";
+		poll-interval = <100>;
 		io-channels = <&saradc 0>;
 		io-channel-names = "buttons";
 		keyup-threshold-microvolt = <1800000>;
-		poll-interval = <100>;
-		status = "okay";
 		recovery-key {
-			label = "F12";
-			linux,code = <KEY_F12>;
-			press-threshold-microvolt = <1750>;
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			press-threshold-microvolt = <1500000>;
 		};
 	};
 
@@ -122,17 +122,13 @@
 		led-power {
 			label = "led-power";
 			default-state = "on";
+			linux,default-trigger = "cpu";
 			gpios = <&gpio0 RK_PC4 GPIO_ACTIVE_HIGH>;
 			pinctrl-names = "default";
-			pinctrl-0 = <&led_pow>;
+			pinctrl-0 = <&led_power>;
 		};
 		/*
-		led-system {
-			label = "led-system";
-			default-state = "on";
-			pinctrl-names = "default";
-			pinctrl-0 = <&led_sys>;
-		};
+		led-system is controlled by mt7916
 		 */
 	};
 
@@ -195,7 +191,7 @@
 &pinctrl {
 	usb {
 		usb0_pwren: usb0-pwren {
-			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
+			rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
 
@@ -224,13 +220,9 @@
 	};
 
 	leds {
-		led_pow: led-pow {
+		led_power: led-power {
 			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
-		/*
-		led_sys: led-sys {
-		};
-		 */
 	};
 };
 
@@ -241,6 +233,7 @@
 	no-sd;
 	no-sdio;
 	non-removable;
+	supports-emmc;
 	cap-mmc-highspeed;
 	mmc-ddr-1_8v;
 	mmc-hs200-1_8v;
@@ -283,13 +276,17 @@
 };
 
 &usb2phy0_host {
+	status = "okay";
 	phy-supply = <&vcc5v0_usb>;
+};
+
+&usb2phy0_otg {
 	status = "okay";
 };
 
 &combphy1 { //configured as SGMII
-	rockchip,sgmii-mac-sel = <1>;
 	status = "okay";
+	rockchip,sgmii-mac-sel = <1>;
 };
 
 &combphy2 { //configured as PCIE2.0x1
@@ -332,9 +329,10 @@
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-	rtl8367s: switch@29 {
+	rtl8367s: switch@1d {
 		compatible = "realtek,rtl8365mb";
 		reg = <29>;
+		dsa,member = <1 0>;
 		reset-assert-us = <20000>;
 		reset-deassert-us = <100000>;
 		reset-gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
@@ -361,7 +359,7 @@
 			};
 			port@4 {
 				reg = <4>;
-				label = "wan0";
+				label = "wan";
 			};
 			port@6 {
 				reg = <6>;
@@ -394,8 +392,8 @@
 	assigned-clocks = <&cru SCLK_GMAC0_RX_TX &cru SCLK_GMAC0>;
 	assigned-clock-rates = <0 125000000>;
 	assigned-clock-parents = <&cru SCLK_GMAC0_RGMII_SPEED>;
-	tx_delay = <0x3f>;
-	rx_delay = <0x2c>;
+	tx_delay = <0x3c>;
+	rx_delay = <0x2f>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac0_miim &gmac0_tx_bus2 &gmac0_rx_bus2 &gmac0_rgmii_clk &gmac0_rgmii_bus>;
 	fixed-link {

@@ -319,6 +319,6 @@ define Device/nsy_g68plus
   DEVICE_DTS_DIR := ../dts
   KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
   SUPPORTED_DEVICES := nsy,g68plus
-  DEVICE_PACKAGES := blkdiscard block-mount kmod-nvme kmod-switch-rtl8367b swconfig kmod-mt7915e kmod-mt7916-firmware
+  DEVICE_PACKAGES := blkdiscard block-mount nvme ata-core swconfig switch-rtl8367b dsa-realtek dsa-realtek-mdio mt7915e mt7916-firmware wpad
 endef
 TARGET_DEVICES += nsy_g68plus

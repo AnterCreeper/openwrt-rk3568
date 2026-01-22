@@ -2,10 +2,6 @@
 
 #include "rk356x-u-boot.dtsi"
 
-&pcie3x2 {
-	pinctrl-0 = <&pcie30x2_reset>;
-};
-
 &pinctrl {
 	pcie {
 		pcie30x2_reset: pcie30x2-reset {
@@ -20,4 +16,34 @@
 	mmc-hs200-1_8v;
 	mmc-hs400-1_8v;
 	mmc-hs400-enhanced-strobe;
+};
+
+&usb_host0_xhci {
+	dr_mode = "otg";
+}
+
+&pcie3x2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie30x2_reset>;
+};
+
+&adc_keys {
+	recovery-key {
+		label = "F12";
+		linux,code = <KEY_F12>;
+		press-threshold-microvolt = <1500000>;
+	};
+};
+
+&gmac0 {
+	status = "okay";
+	snps,reset-gpio = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 20000 1000000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&gmac0_miim &gmac0_tx_bus2 &gmac0_rx_bus2 &gmac0_rgmii_clk &gmac0_rgmii_bus &gmac0_reset>;
+};
+
+&gmac1 {
+	status = "disabled";
 };
