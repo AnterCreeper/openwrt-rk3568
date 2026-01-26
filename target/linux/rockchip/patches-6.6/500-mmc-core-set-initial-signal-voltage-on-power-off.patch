@@ -1,0 +1,10 @@
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -1369,6 +1369,7 @@ void mmc_power_off(struct mmc_host *host)
+ 		return;
+ 
+ 	mmc_pwrseq_power_off(host);
++	mmc_set_initial_signal_voltage(host);
+ 
+ 	host->ios.clock = 0;
+ 	host->ios.vdd = 0;

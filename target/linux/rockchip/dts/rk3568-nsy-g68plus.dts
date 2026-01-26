@@ -83,26 +83,6 @@
 		pinctrl-0 = <&usb0_pwren>;
 	};
 
-	xpcs: syscon@fda00000 {
-		status = "okay";
-		compatible = "rockchip,rk3568-xpcs", "syscon";
-		reg = <0x0 0xfda00000 0x0 0x200000>;
-	};
-
-	gmac0_xpcsclk: xpcs-gmac0-clock {
-		compatible = "fixed-clock";
-		#clock-cells = <0>;
-		clock-frequency = <125000000>;
-		clock-output-names = "clk_gmac0_xpcs_mii";
-	};
-
-	gmac1_xpcsclk: xpcs-gmac1-clock {
-		compatible = "fixed-clock";
-		#clock-cells = <0>;
-		clock-frequency = <125000000>;
-		clock-output-names = "clk_gmac1_xpcs_mii";
-	};
-
 	adc_keys: adc-keys {
 		status = "okay";
 		compatible = "adc-keys";
@@ -237,8 +217,6 @@
 	cap-mmc-highspeed;
 	mmc-ddr-1_8v;
 	mmc-hs200-1_8v;
-	mmc-hs400-1_8v;
-	mmc-hs400-enhanced-strobe;
 	max-frequency = <200000000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
@@ -334,7 +312,7 @@
 		reg = <29>;
 		dsa,member = <1 0>;
 		reset-assert-us = <20000>;
-		reset-deassert-us = <100000>;
+		reset-deassert-us = <1000000>;
 		reset-gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&gmac0_reset>;
@@ -400,6 +378,10 @@
 		speed = <1000>;
 		full-duplex;
 	};
+};
+
+&xpcs {
+	status = "okay";
 };
 
 &gmac1 {

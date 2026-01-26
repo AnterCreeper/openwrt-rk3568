@@ -14,13 +14,11 @@
 	cap-mmc-highspeed;
 	mmc-ddr-1_8v;
 	mmc-hs200-1_8v;
-	mmc-hs400-1_8v;
-	mmc-hs400-enhanced-strobe;
 };
 
 &usb_host0_xhci {
 	dr_mode = "otg";
-}
+};
 
 &pcie3x2 {
 	pinctrl-names = "default";
