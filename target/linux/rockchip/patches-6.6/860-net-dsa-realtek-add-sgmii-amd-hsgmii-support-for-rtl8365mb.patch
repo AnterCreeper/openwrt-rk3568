@@ -64,7 +64,7 @@
 + */
 +static const u8 rtl8365mb_sgmii_init[1183] = {
 +	#include "rtl8365mb.fw"
-+}
++};
 +
  /* Lifted from the vendor driver sources */
  static const struct rtl8365mb_jam_tbl_entry rtl8365mb_init_jam_8365mb_vc[] = {
