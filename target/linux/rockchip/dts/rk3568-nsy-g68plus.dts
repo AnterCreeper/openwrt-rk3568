@@ -307,39 +307,43 @@
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-	rtl8367s: switch@1d {
+	ethernet-switch@1d {
 		compatible = "realtek,rtl8365mb";
 		reg = <29>;
-		dsa,member = <1 0>;
 		reset-assert-us = <20000>;
 		reset-deassert-us = <1000000>;
 		reset-gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&gmac0_reset>;
-		ports {
+		ethernet-ports {
 			#address-cells = <1>;
 			#size-cells = <0>;
-			port@0 {
+			ethernet-port@0 {
 				reg = <0>;
 				label = "lan3";
+				phy-handle = <&switchphy0>;
 			};
-			port@1 {
+			ethernet-port@1 {
 				reg = <1>;
 				label = "lan2";
+				phy-handle = <&switchphy1>;
 			};
-			port@2 {
+			ethernet-port@2 {
 				reg = <2>;
 				label = "lan1";
+				phy-handle = <&switchphy2>;
 			};
-			port@3 {
+			ethernet-port@3 {
 				reg = <3>;
 				label = "lan0";
+				phy-handle = <&switchphy3>;
 			};
-			port@4 {
+			ethernet-port@4 {
 				reg = <4>;
 				label = "wan";
+				phy-handle = <&switchphy4>;
 			};
-			port@6 {
+			ethernet-port@6 {
 				reg = <6>;
 				ethernet = <&gmac1>;
 				phy-mode = "sgmii";
@@ -348,7 +352,7 @@
 					full-duplex;
 				};
 			};
-			port@7 {
+			ethernet-port@7 {
 				reg = <7>;
 				ethernet = <&gmac0>;
 				phy-mode = "rgmii";
@@ -358,6 +362,26 @@
 					speed = <1000>;
 					full-duplex;
 				};
+			};
+		};
+
+		mdio {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			switchphy0: ethernet-phy@0 {
+				reg = <0>;
+			};
+			switchphy1: ethernet-phy@1 {
+				reg = <1>;
+			};
+			switchphy2: ethernet-phy@2 {
+				reg = <2>;
+			};
+			switchphy3: ethernet-phy@3 {
+				reg = <3>;
+			};
+			switchphy4: ethernet-phy@4 {
+				reg = <4>;
 			};
 		};
 	};
