@@ -1,0 +1,220 @@
+--- a/drivers/net/dsa/realtek/rtl8365mb.c
++++ b/drivers/net/dsa/realtek/rtl8365mb.c
+@@ -108,6 +108,7 @@
+ /* Family-specific data and limits */
+ #define RTL8365MB_PHYADDRMAX		7
+ #define RTL8365MB_NUM_PHYREGS		32
++#define RTL8365MB_NUM_LEDGROUPS		3
+ #define RTL8365MB_PHYREGMAX		(RTL8365MB_NUM_PHYREGS - 1)
+ #define RTL8365MB_MAX_NUM_PORTS		11
+ #define RTL8365MB_MAX_NUM_EXTINTS	3
+@@ -342,6 +343,72 @@
+  */
+ #define RTL8365MB_STATS_INTERVAL_JIFFIES	(3 * HZ)
+ 
++/* LED control registers */
++#define RTL8365MB_LED_SYS_CONFIG		0x1B00
++
++#define RTL8365MB_LED_MODE_REG			0x1B02
++#define   RTL8365MB_LED_BLINKRATE_OFFSET	1
++#define   RTL8365MB_LED_BLINKRATE_MASK		0x000E
++
++/* LED blink rate values - used in LED_MODE_REG */
++#define RTL8365MB_LED_BLINKRATE_32MS		0
++#define RTL8365MB_LED_BLINKRATE_64MS		1
++#define RTL8365MB_LED_BLINKRATE_128MS		2
++#define RTL8365MB_LED_BLINKRATE_256MS		3
++#define RTL8365MB_LED_BLINKRATE_512MS		4
++#define RTL8365MB_LED_BLINKRATE_1024MS		5
++#define RTL8365MB_LED_BLINKRATE_48MS		6
++#define RTL8365MB_LED_BLINKRATE_96MS		7
++
++/* LED trigger event for each group */
++#define RTL8365MB_LED_CTRL_REG			0x1B03
++#define   RTL8365MB_LED_CONFIG_SEL_MASK		BIT(14)
++#define   RTL8365MB_DATA_LED_OFFSET		12
++#define   RTL8365MB_DATA_LED_MASK		0x3000
++#define   RTL8365MB_LED_CFG_OFFSET(led_group)	\
++		(4 * (led_group))
++#define   RTL8365MB_LED_CFG_MASK(led_group)	\
++		(0xf << RTL8365MB_LED_CFG_OFFSET(led_group))
++
++/* LED trigger events - used in LED_CTRL_REG */
++#define RTL8365MB_LED_OFF			0
++#define RTL8365MB_LED_DUP_COL			1
++#define RTL8365MB_LED_LINK_ACT			2
++#define RTL8365MB_LED_SPD1000			3
++#define RTL8365MB_LED_SPD100			4
++#define RTL8365MB_LED_SPD10			5
++#define RTL8365MB_LED_SPD1000_ACT		6
++#define RTL8365MB_LED_SPD100_ACT		7
++#define RTL8365MB_LED_SPD10_ACT			8
++#define RTL8365MB_LED_SPD100_10_ACT		9
++#define RTL8365MB_LED_LOOP_DET			10
++#define RTL8365MB_LED_EEE			11
++#define RTL8365MB_LED_LINK_RX			12
++#define RTL8365MB_LED_LINK_TX			13
++#define RTL8365MB_LED_MASTER			14
++#define RTL8365MB_LED_ACT			15
++
++/* LED IO enable for led groups */
++#define RTL8365MB_PARA_LED_IO_EN_REG1		0x1B24
++#define RTL8365MB_PARA_LED_IO_EN_REG2		0x1B25
++#define RTL8365MB_PARA_LED_IO_EN_REG3		0x1B33
++
++#define RTL8365MB_PARA_LED_IO_EN_L_REG(led_group) \
++		((led_group) <= 1 ? RTL8365MB_PARA_LED_IO_EN_REG1 : \
++		 (led_group) == 2 ? RTL8365MB_PARA_LED_IO_EN_REG2 : \
++		 0x0)
++#define   RTL8365MB_PARA_LED_IO_EN_L_OFFSET(led_group) \
++		(((led_group) % 2) * 8)
++#define   RTL8365MB_PARA_LED_IO_EN_L_MASK(led_group) \
++		(0xff << RTL8365MB_PARA_LED_IO_EN_L_OFFSET(led_group))
++
++#define RTL8365MB_PARA_LED_IO_EN_H_REG \
++		RTL8365MB_PARA_LED_IO_EN_REG3
++#define   RTL8365MB_PARA_LED_IO_EN_H_OFFSET(led_group) \
++		((led_group) * 2)
++#define   RTL8365MB_PARA_LED_IO_EN_H_MASK(led_group) \
++		(0x3 << RTL8365MB_PARA_LED_IO_EN_H_OFFSET(led_group))
++
+ enum rtl8365mb_mib_counter_index {
+ 	RTL8365MB_MIB_ifInOctets,
+ 	RTL8365MB_MIB_dot3StatsFCSErrors,
+@@ -2283,6 +2350,125 @@ static int rtl8365mb_reset_chip(struct realtek_priv *priv)
+ 					20000, 1e6);
+ }
+ 
++static void rtl8365mb_init_led(struct realtek_priv *priv)
++{
++	/* copied from drivers/net/phy/rtl8367.c:
++		rtl8367_led_op_select_parallel(struct rtl8366_smi *) */
++	regmap_write(priv->map, RTL8365MB_LED_SYS_CONFIG, 0x1472);
++
++	/* Set blink rate, TODO: make this configurable */
++	regmap_update_bits(priv->map, RTL8365MB_LED_MODE_REG,
++			   RTL8365MB_LED_BLINKRATE_MASK,
++			   RTL8365MB_LED_BLINKRATE_64MS << RTL8365MB_LED_BLINKRATE_OFFSET);
++
++	return;
++}
++
++static int rtl8365mb_set_ledgroup_port(struct realtek_priv *priv,
++				       u32 led_group, u32 port)
++{
++	int ret;
++	u32 lo, hi;
++
++	lo = FIELD_GET(GENMASK(7, 0), port);
++	hi = FIELD_GET(GENMASK(9, 8), port);
++
++	ret = regmap_update_bits(priv->map, RTL8365MB_PARA_LED_IO_EN_L_REG(led_group),
++				 RTL8365MB_PARA_LED_IO_EN_L_MASK(led_group),
++				 lo << RTL8365MB_PARA_LED_IO_EN_L_OFFSET(led_group));
++	if (ret)
++		return ret;
++
++	ret = regmap_update_bits(priv->map, RTL8365MB_PARA_LED_IO_EN_H_REG,
++				 RTL8365MB_PARA_LED_IO_EN_H_MASK(led_group),
++				 hi << RTL8365MB_PARA_LED_IO_EN_H_OFFSET(led_group));
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int rtl8365mb_set_ledgroup_type(struct realtek_priv *priv,
++				       u32 led_group, u32 type)
++{
++	int ret;
++	u32 val;
++
++	ret = regmap_update_bits(priv->map,
++				 RTL8365MB_LED_CTRL_REG,
++				 RTL8365MB_LED_CONFIG_SEL_MASK,
++				 0);
++	if (ret)
++		return ret;
++
++	val = type << RTL8365MB_LED_CFG_OFFSET(led_group);
++	ret = regmap_update_bits(priv->map,
++				 RTL8365MB_LED_CTRL_REG,
++				 RTL8365MB_LED_CFG_MASK(led_group),
++				 val);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int rtl8365mb_setup_led(struct realtek_priv *priv,
++			       struct fwnode_handle *led_fwnode)
++{
++	u32 led_group, port, type;
++	int ret;
++
++	ret = fwnode_property_read_u32(led_fwnode, "reg", &led_group);
++	if (ret)
++		return ret;
++
++	if (led_group >= RTL8365MB_NUM_LEDGROUPS) {
++		dev_warn(priv->dev, "Invalid LED reg %d", led_group);
++		return -EINVAL;
++	}
++
++	/* TODO: add port from port node */
++	ret = fwnode_property_read_u32(led_fwnode, "port", &port);
++	if (ret)
++		return ret;
++	ret = fwnode_property_read_u32(led_fwnode, "type", &type);
++	if (ret)
++		return ret;
++
++	rtl8365mb_set_ledgroup_port(priv, led_group, port);
++	rtl8365mb_set_ledgroup_type(priv, led_group, type);
++
++	dev_info(priv->dev, "setup LED group %d with type %d\n", led_group, type);
++
++	return 0;
++}
++
++static int rtl8365mb_setup_leds(struct realtek_priv *priv)
++{
++	struct device_node *leds_np, *led_np;
++	int ret = 0;
++
++	leds_np = of_get_child_by_name(priv->dev->of_node, "leds");
++	if (!leds_np) {
++		dev_dbg(priv->dev, "missing child leds node\n");
++		return 0;
++	}
++
++	for_each_child_of_node(leds_np, led_np) {
++		ret = rtl8365mb_setup_led(priv, of_fwnode_handle(led_np));
++		if (ret) {
++			of_node_put(led_np);
++			break;
++		}
++	}
++
++	of_node_put(leds_np);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
+ static int rtl8365mb_setup(struct dsa_switch *ds)
+ {
+ 	struct realtek_priv *priv = ds->priv;
+@@ -2368,6 +2554,10 @@ static int rtl8365mb_setup(struct dsa_switch *ds)
+ 	/* Start statistics counter polling */
+ 	rtl8365mb_stats_setup(priv);
+ 
++	/* Setup LEDs */
++	rtl8365mb_init_led(priv);
++	rtl8365mb_setup_leds(priv);
++
+ 	return 0;
+ 
+ out_teardown_irq:

@@ -90,10 +90,11 @@
 		io-channels = <&saradc 0>;
 		io-channel-names = "buttons";
 		keyup-threshold-microvolt = <1800000>;
+
 		recovery-key {
 			label = "reset";
 			linux,code = <KEY_RESTART>;
-			press-threshold-microvolt = <1500000>;
+			press-threshold-microvolt = <450000>;
 		};
 	};
 
@@ -102,7 +103,6 @@
 		led-power {
 			label = "led-power";
 			default-state = "on";
-			linux,default-trigger = "cpu";
 			gpios = <&gpio0 RK_PC4 GPIO_ACTIVE_HIGH>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&led_power>;
@@ -110,18 +110,6 @@
 		/*
 		led-system is controlled by mt7916
 		 */
-	};
-
-	rtlgsw {
-		status = "okay";
-		compatible = "realtek,rtl8367s";
-		mii-bus = <&mdio0>;
-		realtek,id = <29>;
-		realtek,mdio = <&mdio0>;
-		phy-id = <29>;
-		cpu_port = <7>;
-		realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
-		realtek,extif2 = <0 0 1 1 1 1 1 1 2>;
 	};
 };
 
@@ -315,6 +303,7 @@
 		reset-gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&gmac0_reset>;
+
 		ethernet-ports {
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -384,6 +373,26 @@
 				reg = <4>;
 			};
 		};
+
+		leds {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			led-link-spd {
+				reg = <0>;
+				type = <0x9>;
+				port = <0x1f>;
+			};
+			led-link-txd {
+				reg = <1>;
+				type = <0x3>;
+				port = <0x1f>;
+			};
+			led-link-act {
+				reg = <2>;
+				type = <0x2>;
+				port = <0x1f>;
+			};
+		};
 	};
 };
 
@@ -394,10 +403,11 @@
 	assigned-clocks = <&cru SCLK_GMAC0_RX_TX &cru SCLK_GMAC0>;
 	assigned-clock-rates = <0 125000000>;
 	assigned-clock-parents = <&cru SCLK_GMAC0_RGMII_SPEED>;
-	tx_delay = <0x3c>;
-	rx_delay = <0x2f>;
+	tx_delay = <0x4f>;
+	rx_delay = <0x0f>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac0_miim &gmac0_tx_bus2 &gmac0_rx_bus2 &gmac0_rgmii_clk &gmac0_rgmii_bus>;
+
 	fixed-link {
 		speed = <1000>;
 		full-duplex;
@@ -419,6 +429,7 @@
 	assigned-clock-parents = <&gmac1_xpcsclk>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac1m1_miim>;
+
 	fixed-link {
 		speed = <1000>;
 		full-duplex;

@@ -16,11 +16,16 @@
 	status = "disabled";
 };
 
+&leds {
+	led-power {
+		default-state = "off";
+	};
+};
+
 &adc_keys {
 	recovery-key {
 		label = "F12";
 		linux,code = <KEY_F12>;
-		press-threshold-microvolt = <1500000>;
 	};
 };
 

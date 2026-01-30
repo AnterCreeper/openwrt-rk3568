@@ -1,6 +1,6 @@
 --- a/drivers/net/dsa/realtek/rtl8365mb.c
 +++ b/drivers/net/dsa/realtek/rtl8365mb.c
-@@ -115,11 +115,14 @@
+@@ -118,11 +118,14 @@
  
  #define RTL8365MB_CHIP_VER_REG		0x1301
  
@@ -15,7 +15,7 @@
  #define RTL8365MB_CHIP_RESET_SW_MASK	0x0002
  #define RTL8365MB_CHIP_RESET_HW_MASK	0x0001
  
-@@ -251,6 +254,29 @@
+@@ -254,6 +257,29 @@
  #define   RTL8365MB_DIGITAL_INTERFACE_FORCE_DUPLEX_MASK		0x0004
  #define   RTL8365MB_DIGITAL_INTERFACE_FORCE_SPEED_MASK		0x0003
  
@@ -45,7 +45,7 @@
  /* CPU port mask register - controls which ports are treated as CPU ports */
  #define RTL8365MB_CPU_PORT_MASK_REG	0x1219
  #define   RTL8365MB_CPU_PORT_MASK_MASK	0x07FF
-@@ -270,6 +296,8 @@
+@@ -273,6 +299,8 @@
  #define   RTL8365MB_CFG0_MAX_LEN_MASK	0x3FFF
  #define RTL8365MB_CFG0_MAX_LEN_MAX	0x3FFF
  
@@ -54,7 +54,7 @@
  /* Port learning limit registers */
  #define RTL8365MB_LUT_PORT_LEARN_LIMIT_BASE		0x0A20
  #define RTL8365MB_LUT_PORT_LEARN_LIMIT_REG(_physport) \
-@@ -450,6 +478,14 @@ struct rtl8365mb_jam_tbl_entry {
+@@ -453,6 +481,14 @@ struct rtl8365mb_jam_tbl_entry {
  	u16 val;
  };
  
@@ -69,7 +69,7 @@
  /* Lifted from the vendor driver sources */
  static const struct rtl8365mb_jam_tbl_entry rtl8365mb_init_jam_8365mb_vc[] = {
  	{ 0x13EB, 0x15BB }, { 0x1303, 0x06D6 }, { 0x1304, 0x0700 },
-@@ -467,6 +503,39 @@ static const struct rtl8365mb_jam_tbl_entry rtl8365mb_init_jam_common[] = {
+@@ -470,6 +506,39 @@ static const struct rtl8365mb_jam_tbl_entry rtl8365mb_init_jam_common[] = {
  	{ 0x1D32, 0x0002 },
  };
  
@@ -109,7 +109,7 @@
  enum rtl8365mb_phy_interface_mode {
  	RTL8365MB_PHY_INTERFACE_MODE_INVAL = 0,
  	RTL8365MB_PHY_INTERFACE_MODE_INTERNAL = BIT(0),
-@@ -873,6 +942,248 @@ rtl8365mb_get_tag_protocol(struct dsa_switch *ds, int port,
+@@ -865,6 +934,248 @@ rtl8365mb_get_tag_protocol(struct dsa_switch *ds, int port,
  	return DSA_TAG_PROTO_RTL8_4;
  }
  
@@ -358,7 +358,7 @@
  static int rtl8365mb_ext_config_rgmii(struct realtek_priv *priv, int port,
  				      phy_interface_t interface)
  {
-@@ -955,6 +1266,7 @@ static int rtl8365mb_ext_config_rgmii(struct realtek_priv *priv, int port,
+@@ -948,6 +1259,7 @@ static int rtl8365mb_ext_config_rgmii(struct realtek_priv *priv, int port,
  }
  
  static int rtl8365mb_ext_config_forcemode(struct realtek_priv *priv, int port,
@@ -366,7 +366,7 @@
  					  bool link, int speed, int duplex,
  					  bool tx_pause, bool rx_pause)
  {
-@@ -977,7 +1289,7 @@ static int rtl8365mb_ext_config_forcemode(struct realtek_priv *priv, int port,
+@@ -970,7 +1282,7 @@ static int rtl8365mb_ext_config_forcemode(struct realtek_priv *priv, int port,
  		r_rx_pause = rx_pause ? 1 : 0;
  		r_tx_pause = tx_pause ? 1 : 0;
  
@@ -375,7 +375,7 @@
  			r_speed = RTL8365MB_PORT_SPEED_1000M;
  		} else if (speed == SPEED_100) {
  			r_speed = RTL8365MB_PORT_SPEED_100M;
-@@ -1007,6 +1319,25 @@ static int rtl8365mb_ext_config_forcemode(struct realtek_priv *priv, int port,
+@@ -1000,6 +1312,25 @@ static int rtl8365mb_ext_config_forcemode(struct realtek_priv *priv, int port,
  		r_duplex = 0;
  	}
  
@@ -401,7 +401,7 @@
  	val = FIELD_PREP(RTL8365MB_DIGITAL_INTERFACE_FORCE_EN_MASK, 1) |
  	      FIELD_PREP(RTL8365MB_DIGITAL_INTERFACE_FORCE_TXPAUSE_MASK,
  			 r_tx_pause) |
-@@ -1053,6 +1384,14 @@ static void rtl8365mb_phylink_get_caps(struct dsa_switch *ds, int port,
+@@ -1046,6 +1377,14 @@ static void rtl8365mb_phylink_get_caps(struct dsa_switch *ds, int port,
  
  	if (extint->supported_interfaces & RTL8365MB_PHY_INTERFACE_MODE_RGMII)
  		phy_interface_set_rgmii(config->supported_interfaces);
@@ -416,7 +416,7 @@
  }
  
  static void rtl8365mb_phylink_mac_config(struct dsa_switch *ds, int port,
-@@ -1076,6 +1415,10 @@ static void rtl8365mb_phylink_mac_config(struct dsa_switch *ds, int port,
+@@ -1069,6 +1408,10 @@ static void rtl8365mb_phylink_mac_config(struct dsa_switch *ds, int port,
  				"failed to configure RGMII mode on port %d: %d\n",
  				port, ret);
  		return;
@@ -427,7 +427,7 @@
  	}
  
  	/* TODO: Implement MII and RMII modes, which the RTL8365MB-VC also
-@@ -1096,8 +1439,11 @@ static void rtl8365mb_phylink_mac_link_down(struct dsa_switch *ds, int port,
+@@ -1089,8 +1432,11 @@ static void rtl8365mb_phylink_mac_link_down(struct dsa_switch *ds, int port,
  	p = &mb->ports[port];
  	cancel_delayed_work_sync(&p->mib_work);
  
@@ -441,7 +441,7 @@
  						     false, false);
  		if (ret)
  			dev_err(priv->dev,
-@@ -1124,8 +1470,11 @@ static void rtl8365mb_phylink_mac_link_up(struct dsa_switch *ds, int port,
+@@ -1117,8 +1463,11 @@ static void rtl8365mb_phylink_mac_link_up(struct dsa_switch *ds, int port,
  	p = &mb->ports[port];
  	schedule_delayed_work(&p->mib_work, 0);
  
@@ -606,24 +606,3 @@
 +0x06,0x2F,0x00,0x00,0x42,0x06,0x2D,0x00,
 +0x00,0x00,0x12,0x04,0x9B,0x12,0x02,0x16,
 +0x02,0x00,0x03,0xE4,0xF5,0x8E,0x22,
---- a/include/linux/bitfield.h
-+++ b/include/linux/bitfield.h
-@@ -88,6 +88,18 @@
- 		(typeof(_mask))((_mask) >> __bf_shf(_mask));		\
- 	})
- 
-+/**
-+ * FIELD_WIDTH() - returns the number of bits in the field
-+ * @_mask: shifted mask defining the field's length and position
-+ *
-+ * FIELD_WITDH() returns the number of 1-bit specified by @_mask.
-+ */
-+#define FIELD_WIDTH(_mask)						\
-+	({								\
-+		__BF_FIELD_CHECK(_mask, 0ULL, 0ULL, "FIELD_MAX: ");	\
-+		__bf_shf(~FIELD_MAX(_mask));				\
-+	})
-+
- /**
-  * FIELD_FIT() - check if value fits in the field
-  * @_mask: shifted mask defining the field's length and position
