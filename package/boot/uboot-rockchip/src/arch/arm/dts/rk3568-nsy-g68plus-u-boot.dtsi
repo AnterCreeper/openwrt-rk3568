@@ -16,12 +16,6 @@
 	status = "disabled";
 };
 
-&leds {
-	led-power {
-		default-state = "off";
-	};
-};
-
 &adc_keys {
 	recovery-key {
 		label = "F12";

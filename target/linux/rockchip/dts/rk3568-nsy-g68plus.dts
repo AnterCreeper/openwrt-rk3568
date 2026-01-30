@@ -107,9 +107,7 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&led_power>;
 		};
-		/*
-		led-system is controlled by mt7916
-		 */
+		/* led-system is controlled by mt7916 */
 	};
 };
 
